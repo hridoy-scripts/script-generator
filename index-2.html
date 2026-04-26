@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a0533">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Script Gen">
+<meta name="description" content="AI-powered video script generator">
+<title>Script Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0118;
+    --surface: rgba(255,255,255,0.06);
+    --border: rgba(180,130,255,0.2);
+    --accent: #b47aff;
+    --text: #ede9fe;
+    --muted: #9ca3af;
+    --btn: linear-gradient(135deg, #7c3aed, #c026d3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans Bengali', sans-serif;
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(124,58,237,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(192,38,211,0.1) 0%, transparent 50%);
+  }
+  header { text-align: center; margin-bottom: 24px; padding-top: 10px; }
+  .badge { font-size: 11px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 7vw, 40px);
+    background: linear-gradient(90deg, #c4b5fd, #f9a8d4, #fde68a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+  .subtitle { color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+  .tab-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 5px;
+    margin-bottom: 22px;
+    gap: 5px;
+  }
+  .tab-btn {
+    padding: 11px 8px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s;
+    line-height: 1.4;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(124,58,237,0.5), rgba(192,38,211,0.4));
+    color: #e9d5ff;
+    font-weight: 600;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .section-label { font-size: 11px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+
+  input[type="text"], textarea {
+    width: 100%;
+    padding: 13px 15px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+  }
+  input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+
+  .chip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+  .chip {
+    padding: 10px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    font-size: 13px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    transition: all 0.2s;
+    line-height: 1.4;
+  }
+  .chip .icon { font-size: 18px; margin-bottom: 3px; }
+  .chip .name { font-weight: 600; font-size: 12px; }
+  .chip .desc { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+  .chip.active { background: rgba(180,122,255,0.2); border-color: var(--accent); color: #d8b4fe; }
+
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 30px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    transition: all 0.2s;
+  }
+  .pill.active { background: rgba(180,122,255,0.2); border-color: var(--accent); color: #d8b4fe; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .list-btn {
+    display: block; width: 100%;
+    padding: 10px 13px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    text-align: left;
+    margin-bottom: 7px;
+    transition: all 0.2s;
+  }
+  .list-btn.active { background: rgba(180,122,255,0.2); border-color: var(--accent); color: #d8b4fe; }
+
+  .generate-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--btn);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(124,58,237,0.4);
+    transition: all 0.3s;
+    margin-bottom: 20px;
+  }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+  .generate-btn:active { transform: scale(0.98); }
+
+  .error-box {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.35);
+    border-radius: 10px;
+    padding: 12px 15px;
+    color: #fca5a5;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .copy-btn {
+    padding: 7px 14px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: #d1d5db;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    transition: all 0.2s;
+  }
+  .copy-btn.copied { background: rgba(34,197,94,0.15); border-color: #4ade80; color: #4ade80; }
+  .script-output {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    white-space: pre-wrap;
+    line-height: 1.9;
+    font-size: 14px;
+    color: #e5e7eb;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .story-hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+  .install-tip {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 28px;
+    padding: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">✦ AI Powered ✦</div>
+  <h1>Script Generator</h1>
+  <p class="subtitle">যেকোনো video-র জন্য professional script</p>
+</header>
+
+<!-- Tabs -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabBtn1" onclick="switchTab(1)">✨ Topic → Script</button>
+  <button class="tab-btn" id="tabBtn2" onclick="switchTab(2)">📖 গল্প → Script</button>
+</div>
+
+<!-- TAB 1 -->
+<div class="tab-panel active" id="tab1">
+  <div class="card">
+    <div class="section-label">📝 Video Topic</div>
+    <input type="text" id="topic" placeholder="যেমন: মায়ের ভালোবাসা, Bitcoin কী, Morning Routine...">
+  </div>
+
+  <div class="card">
+    <div class="section-label">🎬 Video Type</div>
+    <div class="chip-grid" id="typeGrid">
+      <div class="chip active" data-val="youtube_faceless"><div class="icon">▶</div><div class="name">YouTube Faceless</div><div class="desc">Facts, story, motivation</div></div>
+      <div class="chip" data-val="facebook_reel"><div class="icon">📱</div><div class="name">Facebook Reel</div><div class="desc">Short & viral</div></div>
+      <div class="chip" data-val="product_promo"><div class="icon">🛒</div><div class="name">Product Promo</div><div class="desc">Ad & promotion</div></div>
+      <div class="chip" data-val="educational"><div class="icon">📚</div><div class="name">Educational</div><div class="desc">Tutorial & explainer</div></div>
+      <div class="chip" data-val="story"><div class="icon">🎭</div><div class="name">গল্প / Drama</div><div class="desc">Emotional story</div></div>
+      <div class="chip" data-val="news"><div class="icon">📰</div><div class="name">News Style</div><div class="desc">Current affairs</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="section-label">🌐 Language</div>
+      <button class="list-btn active" data-group="lang" data-val="bengali">বাংলা</button>
+      <button class="list-btn" data-group="lang" data-val="english">English</button>
+      <button class="list-btn" data-group="lang" data-val="mixed">বাংলা + English</button>
+    </div>
+    <div class="card">
+      <div class="section-label">⏱ Duration</div>
+      <button class="list-btn" data-group="dur" data-val="30">৩০ সেকেন্ড</button>
+      <button class="list-btn" data-group="dur" data-val="60">১ মিনিট</button>
+      <button class="list-btn active" data-group="dur" data-val="180">৩ মিনিট</button>
+      <button class="list-btn" data-group="dur" data-val="300">৫ মিনিট</button>
+      <button class="list-btn" data-group="dur" data-val="600">১০ মিনিট</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">🎭 Tone</div>
+    <div class="pill-row" id="toneRow">
+      <div class="pill active" data-val="emotional">😢 Emotional</div>
+      <div class="pill" data-val="energetic">⚡ Energetic</div>
+      <div class="pill" data-val="calm">🌿 Calm</div>
+      <div class="pill" data-val="humorous">😄 Funny</div>
+      <div class="pill" data-val="serious">🎯 Serious</div>
+      <div class="pill" data-val="inspiring">🔥 Inspiring</div>
+    </div>
+  </div>
+
+  <div class="error-box" id="err1" style="display:none"></div>
+  <button class="generate-btn" id="btn1" onclick="generateScript()">✨ Script Generate করো</button>
+  <div id="out1" style="display:none">
+    <div class="output-header">
+      <span class="section-label" style="margin:0">📄 Generated Script</span>
+      <button class="copy-btn" id="cp1" onclick="copyScript('so1','cp1')">📋 Copy</button>
+    </div>
+    <div class="script-output" id="so1"></div>
+  </div>
+</div>
+
+<!-- TAB 2 -->
+<div class="tab-panel" id="tab2">
+  <div class="card">
+    <div class="section-label">📖 তোমার গল্প / Idea</div>
+    <textarea id="storyInput" rows="7" placeholder="এখানে তোমার গল্প paste করো...&#10;&#10;যেমন: একটা মেয়ে তার মায়ের মৃত্যুর পর সম্পত্তি নিয়ে পরিবারের সাথে লড়াই করে..."></textarea>
+    <p class="story-hint">💡 যত বিস্তারিত দেবে, script তত ভালো হবে</p>
+  </div>
+
+  <div class="card">
+    <div class="section-label">🎬 Video Type</div>
+    <div class="chip-grid" id="typeGrid2">
+      <div class="chip active" data-val="youtube_faceless"><div class="icon">▶</div><div class="name">YouTube Faceless</div><div class="desc">Voice-over style</div></div>
+      <div class="chip" data-val="facebook_reel"><div class="icon">📱</div><div class="name">Facebook Reel</div><div class="desc">Short & punchy</div></div>
+      <div class="chip" data-val="drama"><div class="icon">🎭</div><div class="name">Drama / নাটক</div><div class="desc">Full dialogue</div></div>
+      <div class="chip" data-val="documentary"><div class="icon">🎥</div><div class="name">Documentary</div><div class="desc">Real story style</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="section-label">🌐 Language</div>
+      <button class="list-btn active" data-group="lang2" data-val="bengali">বাংলা</button>
+      <button class="list-btn" data-group="lang2" data-val="english">English</button>
+      <button class="list-btn" data-group="lang2" data-val="mixed">বাংলা + English</button>
+    </div>
+    <div class="card">
+      <div class="section-label">⏱ Duration</div>
+      <button class="list-btn" data-group="dur2" data-val="60">১ মিনিট</button>
+      <button class="list-btn active" data-group="dur2" data-val="180">৩ মিনিট</button>
+      <button class="list-btn" data-group="dur2" data-val="300">৫ মিনিট</button>
+      <button class="list-btn" data-group="dur2" data-val="600">১০ মিনিট</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">🎭 Tone</div>
+    <div class="pill-row" id="toneRow2">
+      <div class="pill active" data-val="emotional">😢 Emotional</div>
+      <div class="pill" data-val="dramatic">🔥 Dramatic</div>
+      <div class="pill" data-val="calm">🌿 Calm</div>
+      <div class="pill" data-val="inspiring">💫 Inspiring</div>
+      <div class="pill" data-val="suspenseful">😮 Suspenseful</div>
+    </div>
+  </div>
+
+  <div class="error-box" id="err2" style="display:none"></div>
+  <button class="generate-btn" id="btn2" onclick="convertStory()">📖 Script-এ Convert করো</button>
+  <div id="out2" style="display:none">
+    <div class="output-header">
+      <span class="section-label" style="margin:0">📄 Converted Script</span>
+      <button class="copy-btn" id="cp2" onclick="copyScript('so2','cp2')">📋 Copy</button>
+    </div>
+    <div class="script-output" id="so2"></div>
+  </div>
+</div>
+
+<div class="install-tip">💡 Home screen-এ add করতে: Browser menu → "Add to Home Screen"</div>
+
+<script>
+const s = { type:'youtube_faceless', lang:'bengali', dur:'180', tone:'emotional', type2:'youtube_faceless', lang2:'bengali', dur2:'180', tone2:'emotional' };
+
+function switchTab(n) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab'+n).classList.add('active');
+  document.getElementById('tabBtn'+n).classList.add('active');
+}
+
+document.querySelectorAll('#typeGrid .chip').forEach(el => { el.onclick = () => { document.querySelectorAll('#typeGrid .chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); s.type=el.dataset.val; }; });
+document.querySelectorAll('#typeGrid2 .chip').forEach(el => { el.onclick = () => { document.querySelectorAll('#typeGrid2 .chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); s.type2=el.dataset.val; }; });
+document.querySelectorAll('.list-btn').forEach(el => { el.onclick = () => { const g=el.dataset.group; document.querySelectorAll(`.list-btn[data-group="${g}"]`).forEach(b=>b.classList.remove('active')); el.classList.add('active'); s[g]=el.dataset.val; }; });
+document.querySelectorAll('#toneRow .pill').forEach(el => { el.onclick = () => { document.querySelectorAll('#toneRow .pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); s.tone=el.dataset.val; }; });
+document.querySelectorAll('#toneRow2 .pill').forEach(el => { el.onclick = () => { document.querySelectorAll('#toneRow2 .pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); s.tone2=el.dataset.val; }; });
+
+const TL={youtube_faceless:'YouTube Faceless',facebook_reel:'Facebook Reel',product_promo:'Product Promo',educational:'Educational',story:'গল্প/Drama',news:'News Style',drama:'Drama/নাটক',documentary:'Documentary'};
+const LL={bengali:'বাংলা',english:'English',mixed:'বাংলা+English'};
+const DL={30:'৩০ সেকেন্ড',60:'১ মিনিট',180:'৩ মিনিট',300:'৫ মিনিট',600:'১০ মিনিট'};
+const TOL={emotional:'Emotional',energetic:'Energetic',calm:'Calm',humorous:'Funny',serious:'Serious',inspiring:'Inspiring',dramatic:'Dramatic',suspenseful:'Suspenseful'};
+
+async function callAPI(prompt, btnId, outId, errId) {
+  const btn=document.getElementById(btnId), orig=btn.innerHTML;
+  btn.disabled=true; btn.innerHTML='⏳ তৈরি হচ্ছে...';
+  document.getElementById(outId).style.display='none';
+  document.getElementById(errId).style.display='none';
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=(data.content||[]).map(c=>c.text||'').join('');
+    const soId=outId==='out1'?'so1':'so2';
+    document.getElementById(soId).textContent=text;
+    document.getElementById(outId).style.display='block';
+    document.getElementById(outId).scrollIntoView({behavior:'smooth'});
+  } catch(e) {
+    const eb=document.getElementById(errId); eb.textContent='❌ সমস্যা হয়েছে। আবার চেষ্টা করো।'; eb.style.display='block';
+  } finally { btn.disabled=false; btn.innerHTML=orig; }
+}
+
+async function generateScript() {
+  const topic=document.getElementById('topic').value.trim();
+  if(!topic){const e=document.getElementById('err1');e.textContent='⚠️ Topic লিখো আগে!';e.style.display='block';return;}
+  const prompt=`তুমি একজন expert video script writer। নিচের details অনুযায়ী একটি professional video script লেখো:\n\nTopic: ${topic}\nVideo Type: ${TL[s.type]}\nLanguage: ${LL[s.lang]}\nDuration: ${DL[s.dur]}\nTone: ${TOL[s.tone]}\n\nScript format:\n- [HOOK] দিয়ে শুরু করো (প্রথম ৫ সেকেন্ড)\n- [INTRO] section\n- [MAIN CONTENT] — duration অনুযায়ী বিস্তারিত\n- [CTA] — Call to Action দিয়ে শেষ\n\nVoice-over এর জন্য natural ভাষায় লেখো।`;
+  await callAPI(prompt,'btn1','out1','err1');
+}
+
+async function convertStory() {
+  const story=document.getElementById('storyInput').value.trim();
+  if(!story){const e=document.getElementById('err2');e.textContent='⚠️ গল্প লিখো আগে!';e.style.display='block';return;}
+  const prompt=`তুমি একজন expert video script writer। নিচের গল্পটিকে একটি professional video script-এ রূপান্তর করো:\n\nগল্প:\n${story}\n\nVideo Type: ${TL[s.type2]}\nLanguage: ${LL[s.lang2]}\nDuration: ${DL[s.dur2]}\nTone: ${TOL[s.tone2]}\n\nScript format:\n- [HOOK] — গল্পের সবচেয়ে চমকপ্রদ অংশ দিয়ে শুরু\n- [SETUP] — পরিস্থিতি তুলে ধরো\n- [CONFLICT] — মূল ঘটনা বিস্তারিতভাবে\n- [RESOLUTION] — সমাধান বা পরিণতি\n- [CTA] — দর্শকদের জন্য message\n\nGল্পের emotional moments highlight করো। Voice-over এর জন্য natural ভাষায় লেখো।`;
+  await callAPI(prompt,'btn2','out2','err2');
+}
+
+function copyScript(soId,cpId) {
+  navigator.clipboard.writeText(document.getElementById(soId).textContent).then(()=>{
+    const b=document.getElementById(cpId); b.textContent='✅ Copied!'; b.classList.add('copied');
+    setTimeout(()=>{b.textContent='📋 Copy';b.classList.remove('copied');},2000);
+  });
+}
+
+document.getElementById('topic').addEventListener('keydown',e=>{if(e.key==='Enter')generateScript();});
+</script>
+</body>
+</html>
