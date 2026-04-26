@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a0533">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Script Gen">
+<title>Script Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0118;
+    --surface: rgba(255,255,255,0.06);
+    --border: rgba(180,130,255,0.2);
+    --accent: #b47aff;
+    --text: #ede9fe;
+    --muted: #9ca3af;
+    --btn: linear-gradient(135deg, #7c3aed, #c026d3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans Bengali', sans-serif;
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(124,58,237,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(192,38,211,0.1) 0%, transparent 50%);
+  }
+  header { text-align: center; margin-bottom: 24px; padding-top: 10px; }
+  .badge { font-size: 11px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 7vw, 40px);
+    background: linear-gradient(90deg, #c4b5fd, #f9a8d4, #fde68a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+  .subtitle { color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+  .tab-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 5px;
+    margin-bottom: 22px;
+    gap: 5px;
+  }
+  .tab-btn {
+    padding: 11px 8px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(124,58,237,0.5), rgba(192,38,211,0.4));
+    color: #e9d5ff;
+    font-weight: 600;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .section-label { font-size: 11px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+
+  input[type="text"], textarea {
+    width: 100%;
+    padding: 13px 15px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+
+  .chip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+  .chip {
+    padding: 10px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    font-size: 13px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    transition: all 0.2s;
+    line-height: 1.4;
+  }
+  .chip .icon { font-size: 18px; margin-bottom: 3px; }
+  .chip .name { font-weight: 600; font-size: 12px; }
+  .chip .desc { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+  .chip.active { background: rgba(180,122,255,0.2); border-color: var(--accent); color: #d8b4fe; }
+
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 30px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    transition: all 0.2s;
+  }
+  .pill.active { background: rgba(180,122,255,0.2); border-color: var(--accent); color: #d8b4fe; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .list-btn {
+    display: block; width: 100%;
+    padding: 10px 13px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    text-align: left;
+    margin-bottom: 7px;
+    transition: all 0.2s;
+  }
+  .list-btn.active { background: rgba(180,122,255,0.2); border-color: var(--accent); color: #d8b4fe; }
+
+  .generate-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--btn);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(124,58,237,0.4);
+    transition: all 0.3s;
+    margin-bottom: 16px;
+  }
+  .generate-btn:active { transform: scale(0.98); }
+
+  .error-box {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.35);
+    border-radius: 10px;
+    padding: 12px 15px;
+    color: #fca5a5;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .output-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #e5e7eb;
+    white-space: pre-wrap;
+    max-height: 50vh;
+    overflow-y: auto;
+    margin-bottom: 12px;
+  }
+
+  .copy-btn {
+    width: 100%;
+    padding: 14px;
+    background: rgba(34,197,94,0.15);
+    border: 1px solid #4ade80;
+    border-radius: 12px;
+    color: #4ade80;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+  }
+  .copy-btn.copied { background: rgba(34,197,94,0.3); }
+
+  .claude-btn {
+    width: 100%;
+    padding: 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: #c4b5fd;
+    font-size: 14px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  .steps {
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 2;
+    color: #c4b5fd;
+  }
+
+  .install-tip {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 28px;
+    padding: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">✦ Prompt Builder ✦</div>
+  <h1>Script Generator</h1>
+  <p class="subtitle">Prompt বানাও → Claude-এ paste করো → Script পাও</p>
+</header>
+
+<div class="steps">
+  ১. নিচে details দাও<br>
+  ২. "Prompt বানাও" চাপো<br>
+  ৩. "Copy" করো<br>
+  ৪. Claude.ai তে paste করো → Script ready! 🎉
+</div>
+
+<!-- Tabs -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabBtn1" onclick="switchTab(1)">✨ Topic → Script</button>
+  <button class="tab-btn" id="tabBtn2" onclick="switchTab(2)">📖 গল্প → Script</button>
+</div>
+
+<!-- TAB 1 -->
+<div class="tab-panel active" id="tab1">
+  <div class="card">
+    <div class="section-label">📝 Video Topic</div>
+    <input type="text" id="topic" placeholder="যেমন: মায়ের ভালোবাসা, Bitcoin কী...">
+  </div>
+
+  <div class="card">
+    <div class="section-label">🎬 Video Type</div>
+    <div class="chip-grid" id="typeGrid">
+      <div class="chip active" data-val="YouTube Faceless"><div class="icon">▶</div><div class="name">YouTube Faceless</div><div class="desc">Facts, story</div></div>
+      <div class="chip" data-val="Facebook Reel"><div class="icon">📱</div><div class="name">Facebook Reel</div><div class="desc">Short & viral</div></div>
+      <div class="chip" data-val="Product Promo"><div class="icon">🛒</div><div class="name">Product Promo</div><div class="desc">Ad & promotion</div></div>
+      <div class="chip" data-val="Educational"><div class="icon">📚</div><div class="name">Educational</div><div class="desc">Tutorial</div></div>
+      <div class="chip" data-val="গল্প/Drama"><div class="icon">🎭</div><div class="name">গল্প / Drama</div><div class="desc">Emotional</div></div>
+      <div class="chip" data-val="News Style"><div class="icon">📰</div><div class="name">News Style</div><div class="desc">Current affairs</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="section-label">🌐 Language</div>
+      <button class="list-btn active" data-group="lang" data-val="বাংলা">বাংলা</button>
+      <button class="list-btn" data-group="lang" data-val="English">English</button>
+      <button class="list-btn" data-group="lang" data-val="বাংলা+English">বাংলা+English</button>
+    </div>
+    <div class="card">
+      <div class="section-label">⏱ Duration</div>
+      <button class="list-btn" data-group="dur" data-val="৩০ সেকেন্ড">৩০ সেকেন্ড</button>
+      <button class="list-btn" data-group="dur" data-val="১ মিনিট">১ মিনিট</button>
+      <button class="list-btn active" data-group="dur" data-val="৩ মিনিট">৩ মিনিট</button>
+      <button class="list-btn" data-group="dur" data-val="৫ মিনিট">৫ মিনিট</button>
+      <button class="list-btn" data-group="dur" data-val="১০ মিনিট">১০ মিনিট</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">🎭 Tone</div>
+    <div class="pill-row" id="toneRow">
+      <div class="pill active" data-val="Emotional">😢 Emotional</div>
+      <div class="pill" data-val="Energetic">⚡ Energetic</div>
+      <div class="pill" data-val="Calm">🌿 Calm</div>
+      <div class="pill" data-val="Funny">😄 Funny</div>
+      <div class="pill" data-val="Serious">🎯 Serious</div>
+      <div class="pill" data-val="Inspiring">🔥 Inspiring</div>
+    </div>
+  </div>
+
+  <div class="error-box" id="err1" style="display:none"></div>
+  <button class="generate-btn" onclick="buildPrompt1()">✨ Prompt বানাও</button>
+
+  <div id="out1" style="display:none">
+    <div class="output-box" id="so1"></div>
+    <button class="copy-btn" id="cp1" onclick="copyText('so1','cp1')">📋 Prompt Copy করো</button>
+    <a class="claude-btn" href="https://claude.ai" target="_blank">→ Claude.ai তে যাও & Paste করো</a>
+  </div>
+</div>
+
+<!-- TAB 2 -->
+<div class="tab-panel" id="tab2">
+  <div class="card">
+    <div class="section-label">📖 তোমার গল্প</div>
+    <textarea id="storyInput" rows="7" placeholder="এখানে গল্প paste করো..."></textarea>
+    <p class="hint">💡 যত বিস্তারিত দেবে, script তত ভালো হবে</p>
+  </div>
+
+  <div class="card">
+    <div class="section-label">🎬 Video Type</div>
+    <div class="chip-grid" id="typeGrid2">
+      <div class="chip active" data-val="YouTube Faceless"><div class="icon">▶</div><div class="name">YouTube Faceless</div><div class="desc">Voice-over</div></div>
+      <div class="chip" data-val="Facebook Reel"><div class="icon">📱</div><div class="name">Facebook Reel</div><div class="desc">Short & punchy</div></div>
+      <div class="chip" data-val="Drama/নাটক"><div class="icon">🎭</div><div class="name">Drama / নাটক</div><div class="desc">Full dialogue</div></div>
+      <div class="chip" data-val="Documentary"><div class="icon">🎥</div><div class="name">Documentary</div><div class="desc">Real story</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="section-label">🌐 Language</div>
+      <button class="list-btn active" data-group="lang2" data-val="বাংলা">বাংলা</button>
+      <button class="list-btn" data-group="lang2" data-val="English">English</button>
+      <button class="list-btn" data-group="lang2" data-val="বাংলা+English">Mixed</button>
+    </div>
+    <div class="card">
+      <div class="section-label">⏱ Duration</div>
+      <button class="list-btn" data-group="dur2" data-val="১ মিনিট">১ মিনিট</button>
+      <button class="list-btn active" data-group="dur2" data-val="৩ মিনিট">৩ মিনিট</button>
+      <button class="list-btn" data-group="dur2" data-val="৫ মিনিট">৫ মিনিট</button>
+      <button class="list-btn" data-group="dur2" data-val="১০ মিনিট">১০ মিনিট</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">🎭 Tone</div>
+    <div class="pill-row" id="toneRow2">
+      <div class="pill active" data-val="Emotional">😢 Emotional</div>
+      <div class="pill" data-val="Dramatic">🔥 Dramatic</div>
+      <div class="pill" data-val="Calm">🌿 Calm</div>
+      <div class="pill" data-val="Inspiring">💫 Inspiring</div>
+      <div class="pill" data-val="Suspenseful">😮 Suspenseful</div>
+    </div>
+  </div>
+
+  <div class="error-box" id="err2" style="display:none"></div>
+  <button class="generate-btn" onclick="buildPrompt2()">📖 Prompt বানাও</button>
+
+  <div id="out2" style="display:none">
+    <div class="output-box" id="so2"></div>
+    <button class="copy-btn" id="cp2" onclick="copyText('so2','cp2')">📋 Prompt Copy করো</button>
+    <a class="claude-btn" href="https://claude.ai" target="_blank">→ Claude.ai তে যাও & Paste করো</a>
+  </div>
+</div>
+
+<div class="install-tip">💡 Home screen-এ add করতে: Browser menu → "Add to Home Screen"</div>
+
+<script>
+const s = { type:'YouTube Faceless', lang:'বাংলা', dur:'৩ মিনিট', tone:'Emotional', type2:'YouTube Faceless', lang2:'বাংলা', dur2:'৩ মিনিট', tone2:'Emotional' };
+
+function switchTab(n) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab'+n).classList.add('active');
+  document.getElementById('tabBtn'+n).classList.add('active');
+}
+
+document.querySelectorAll('#typeGrid .chip').forEach(el=>{el.onclick=()=>{document.querySelectorAll('#typeGrid .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');s.type=el.dataset.val;};});
+document.querySelectorAll('#typeGrid2 .chip').forEach(el=>{el.onclick=()=>{document.querySelectorAll('#typeGrid2 .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');s.type2=el.dataset.val;};});
+document.querySelectorAll('.list-btn').forEach(el=>{el.onclick=()=>{const g=el.dataset.group;document.querySelectorAll(`.list-btn[data-group="${g}"]`).forEach(b=>b.classList.remove('active'));el.classList.add('active');s[g]=el.dataset.val;};});
+document.querySelectorAll('#toneRow .pill').forEach(el=>{el.onclick=()=>{document.querySelectorAll('#toneRow .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');s.tone=el.dataset.val;};});
+document.querySelectorAll('#toneRow2 .pill').forEach(el=>{el.onclick=()=>{document.querySelectorAll('#toneRow2 .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');s.tone2=el.dataset.val;};});
+
+function buildPrompt1() {
+  const topic = document.getElementById('topic').value.trim();
+  if(!topic){const e=document.getElementById('err1');e.textContent='⚠️ Topic লিখো আগে!';e.style.display='block';return;}
+  document.getElementById('err1').style.display='none';
+  const prompt = `আমি একটি video script চাই।
+
+Topic: ${topic}
+Video Type: ${s.type}
+Language: ${s.lang}
+Duration: ${s.dur}
+Tone: ${s.tone}
+
+Script format:
+[HOOK] → প্রথম ৫ সেকেন্ড — দর্শককে আটকে রাখার জন্য
+[INTRO] → পরিচয়
+[MAIN CONTENT] → মূল বিষয় বিস্তারিতভাবে
+[CTA] → শেষে call to action
+
+Voice-over এর জন্য natural ভাষায় লেখো।`;
+  document.getElementById('so1').textContent = prompt;
+  document.getElementById('out1').style.display = 'block';
+  document.getElementById('out1').scrollIntoView({behavior:'smooth'});
+}
+
+function buildPrompt2() {
+  const story = document.getElementById('storyInput').value.trim();
+  if(!story){const e=document.getElementById('err2');e.textContent='⚠️ গল্প লিখো আগে!';e.style.display='block';return;}
+  document.getElementById('err2').style.display='none';
+  const prompt = `আমার একটি গল্পকে video script-এ convert করো।
+
+গল্প:
+${story}
+
+Video Type: ${s.type2}
+Language: ${s.lang2}
+Duration: ${s.dur2}
+Tone: ${s.tone2}
+
+Format:
+[HOOK] → গল্পের সবচেয়ে চমকপ্রদ অংশ দিয়ে শুরু
+[SETUP] → পরিস্থিতি তুলে ধরো
+[CONFLICT] → মূল ঘটনা বিস্তারিতভাবে
+[RESOLUTION] → সমাধান বা পরিণতি
+[CTA] → দর্শকদের জন্য শেষ message
+
+Emotional moments highlight করো। Voice-over এর জন্য natural ভাষায় লেখো।`;
+  document.getElementById('so2').textContent = prompt;
+  document.getElementById('out2').style.display = 'block';
+  document.getElementById('out2').scrollIntoView({behavior:'smooth'});
+}
+
+function copyText(soId, cpId) {
+  navigator.clipboard.writeText(document.getElementById(soId).textContent).then(()=>{
+    const b=document.getElementById(cpId);
+    b.textContent='✅ Copied! এখন Claude.ai তে paste করো';
+    b.classList.add('copied');
+    setTimeout(()=>{b.textContent='📋 Prompt Copy করো';b.classList.remove('copied');},3000);
+  });
+}
+</script>
+</body>
+</html>
